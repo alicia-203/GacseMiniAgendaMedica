@@ -1,0 +1,6 @@
+@GacseMiniAgendaMedica_HostAddress = http://localhost:5068
+
+GET {{GacseMiniAgendaMedica_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
