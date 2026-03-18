@@ -18,21 +18,19 @@ public class CitaRepository : ICitaRepository
 
     public async Task<bool> ExisteConflicto(int medicoId, DateTime fecha, TimeSpan hora, int duracion)
     {
-        using var conn = _context.Database.GetDbConnection();
-        await conn.OpenAsync();
+        var result = (await _context.Set<ExisteConflictoDTO>()
+            .FromSqlRaw("EXEC sp_ValidarDisponibilidad @MedicoId, @Fecha, @Hora, @Duracion",
+                new SqlParameter("@MedicoId", medicoId),
+                new SqlParameter("@Fecha", fecha.Date),
+                new SqlParameter("@Hora", hora),
+                new SqlParameter("@Duracion", duracion))
+            .AsNoTracking()
+            .ToListAsync()) 
+            .FirstOrDefault(); 
 
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = "sp_ValidarDisponibilidad";
-        cmd.CommandType = CommandType.StoredProcedure;
+        var value = result?.Resultado ?? 0;
 
-        cmd.Parameters.Add(new SqlParameter("@MedicoId", SqlDbType.Int) { Value = medicoId });
-        cmd.Parameters.Add(new SqlParameter("@Fecha", SqlDbType.Date) { Value = fecha.Date });
-        cmd.Parameters.Add(new SqlParameter("@Hora", SqlDbType.Time) { Value = hora });
-        cmd.Parameters.Add(new SqlParameter("@Duracion", SqlDbType.Int) { Value = duracion });
-
-        var result = await cmd.ExecuteScalarAsync();
-
-        return Convert.ToInt32(result) == 1;
+        return value != 1;
     }
 
     public async Task<List<CitaAgendaDTO>> AgendaDelDia(int medicoId, DateTime fecha)
@@ -61,8 +59,33 @@ public class CitaRepository : ICitaRepository
 
     public async Task Agendar(Cita cita)
     {
+        if (cita == null)
+            throw new ArgumentNullException(nameof(cita));
+
+        if (cita.MedicoId <= 0)
+            throw new ArgumentException("MedicoId inválido");
+
+        if (cita.PacienteId <= 0)
+            throw new ArgumentException("PacienteId inválido");
+
+        if (cita.Fecha == default)
+            throw new ArgumentException("Fecha inválida");
+
+        if (string.IsNullOrWhiteSpace(cita.Motivo))
+            cita.Motivo = "No especificado"; // o lanzar excepción
+
         _context.Citas.Add(cita);
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            // Esto te da el error real de SQL Server
+            Console.WriteLine(ex.InnerException?.Message);
+            throw;
+        }
     }
 
     public async Task<Cita?> ObtenerPorId(int id)
@@ -97,8 +120,8 @@ public class CitaRepository : ICitaRepository
     public async Task<string> ObtenerEspecialidadMedico(int medicoId)
     {
         return await _context.Medicos
-            .Where(m => m.Id == medicoId)
-            .Select(m => m.Especialidad)
-            .FirstOrDefaultAsync();
+        .Where(m => m.Id == medicoId)
+        .Select(m => m.Especialidad.Nombre)
+        .FirstOrDefaultAsync();
     }
 }

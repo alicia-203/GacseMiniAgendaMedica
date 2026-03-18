@@ -21,6 +21,8 @@ public class AppDbContext : DbContext
 
     public DbSet<CitaAgendaDTO> CitasAgenda { get; set; }
 
+    public DbSet<Especialidad> Especialidades { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Paciente>(entity =>
@@ -37,6 +39,12 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Medico>()
             .Property(m => m.Id)
             .HasColumnName("MedicoId");
+
+        modelBuilder.Entity<Medico>()
+       .HasOne(m => m.Especialidad)        // un médico tiene una especialidad
+       .WithMany(e => e.Medicos)           // una especialidad tiene muchos médicos
+       .HasForeignKey(m => m.EspecialidadId) // FK
+       .OnDelete(DeleteBehavior.Restrict); // evita borrar especialidad si tiene médicos
 
         modelBuilder.Entity<HorarioMedico>()
             .HasKey(h => h.Id);
@@ -62,5 +70,15 @@ public class AppDbContext : DbContext
            .HasColumnName("PacienteId");
 
         modelBuilder.Entity<CitaAgendaDTO>().HasNoKey();
+
+        modelBuilder.Entity<Especialidad>()
+        .HasKey(m => m.Id);
+
+        modelBuilder.Entity<Especialidad>()
+            .Property(m => m.Id)
+            .HasColumnName("EspecialidadId");
+
+        modelBuilder.Entity<ExisteConflictoDTO>().HasNoKey();
+        modelBuilder.Entity<ExisteConflictoDTO>().ToView(null);
     }
 }

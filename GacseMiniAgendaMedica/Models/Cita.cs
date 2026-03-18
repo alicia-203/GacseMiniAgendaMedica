@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 public class Cita
 {
+    [Column("CitaId")]
     public int Id { get; set; }
 
     public int MedicoId { get; set; }
@@ -14,15 +15,17 @@ public class Cita
 
     public DateTime Fecha { get; set; }
 
+    [Required]
+    [Column(TypeName = "time")]
     public TimeSpan Hora { get; set; }
 
-    public string Motivo { get; set; }
+    public string? Motivo { get; set; }
 
     public string Estado { get; set; } = "Agendada";
 
-    public string MotivoCancelacion { get; set; }
+    public string? MotivoCancelacion { get; set; }
 
-    public Medico Medico { get; set; }
+    public Medico? Medico { get; set; }
 
-    public Paciente Paciente { get; set; }
+    public Paciente? Paciente { get; set; }
 }

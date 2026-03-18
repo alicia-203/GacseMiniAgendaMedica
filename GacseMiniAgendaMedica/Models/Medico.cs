@@ -6,8 +6,9 @@ public class Medico
 
     public string Nombre { get; set; }
 
-    public String Especialidad { get; set; }
+    public int EspecialidadId { get; set; }
 
+    public Especialidad Especialidad { get; set; } // navegación
     public List<HorarioMedico> HorariosMedico { get; set; } = new List<HorarioMedico>();
 
 }

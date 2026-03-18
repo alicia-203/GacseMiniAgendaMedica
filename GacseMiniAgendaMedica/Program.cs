@@ -12,6 +12,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<MedicoRepository>();
 builder.Services.AddScoped<IPacienteRepository,PacienteRepository>();
 builder.Services.AddScoped<ICitaRepository,CitaRepository>();
+builder.Services.AddScoped<IEspecialidadRepository, EspecialidadRepository>();
 
 builder.Services.AddScoped<MedicoService>();
 builder.Services.AddScoped<IPacienteService,PacienteService>();

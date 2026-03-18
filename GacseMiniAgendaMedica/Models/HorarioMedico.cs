@@ -14,12 +14,4 @@ public class HorarioMedico
 
     public TimeSpan HoraFin { get; set; }
 
-    public string DiaSemanaTexto
-    {
-        get
-        {
-            var cultura = new CultureInfo("es-ES");
-            return cultura.DateTimeFormat.GetDayName(DiaSemana);
-        }
-    }
 }

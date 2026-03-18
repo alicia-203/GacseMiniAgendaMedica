@@ -1,4 +1,5 @@
-﻿using GacseMiniAgendaMedica.Models;
+﻿using GacseMiniAgendaMedica.DTOs;
+using GacseMiniAgendaMedica.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GacseMiniAgendaMedica.Data.Repositories;
@@ -12,15 +13,55 @@ public class MedicoRepository
         _context = context;
     }
 
-    public async Task<List<Medico>> GetAllAsync()
+    public async Task<List<MedicoGetDTO>> GetAllAsync()
     {
-        return await _context.Medicos.Include(m => m.HorariosMedico).ToListAsync();
+        return await _context.Medicos
+            .Include(m => m.HorariosMedico)          // Incluye horarios
+            .Include(m => m.Especialidad)            // Incluye especialidad
+            .Select(m => new MedicoGetDTO
+            {
+                Nombre = m.Nombre,
+                EspecialidadId = m.EspecialidadId,
+                Especialidad = new EspecialidadDTO
+                {
+                    Id = m.Especialidad.Id,
+                    Nombre = m.Especialidad.Nombre,
+                    Duracion = m.Especialidad.Duracion
+                },
+                Horarios = m.HorariosMedico.Select(h => new HorarioMedicoDTO
+                {
+                    DiaSemana = (int)h.DiaSemana,
+                    HoraInicio = h.HoraInicio.ToString(@"hh\:mm"), // si es TimeSpan
+                    HoraFin = h.HoraFin.ToString(@"hh\:mm")
+                }).ToList()
+            })
+            .ToListAsync();
     }
 
-    public async Task<Medico> GetByIdAsync(int id)
+    public async Task<MedicoGetDTO> GetByIdAsync(int id)
     {
-        return await _context.Medicos.Include(m => m.HorariosMedico)
-                                     .FirstOrDefaultAsync(m => m.Id == id);
+        return await _context.Medicos
+               .Where(m => m.Id == id)               // Filtramos por Id
+               .Include(m => m.HorariosMedico)            // Incluye horarios
+               .Include(m => m.Especialidad)              // Incluye especialidad
+               .Select(m => new MedicoGetDTO
+               {
+                   Nombre = m.Nombre,
+                   EspecialidadId = m.EspecialidadId,
+                   Especialidad = new EspecialidadDTO
+                   {
+                       Id = m.Especialidad.Id,
+                       Nombre = m.Especialidad.Nombre,
+                       Duracion = m.Especialidad.Duracion
+                   },
+                   Horarios = m.HorariosMedico.Select(h => new HorarioMedicoDTO
+                   {
+                       DiaSemana = (int)h.DiaSemana,
+                       HoraInicio = h.HoraInicio.ToString(@"hh\:mm"),
+                       HoraFin = h.HoraFin.ToString(@"hh\:mm")
+                   }).ToList()
+               })
+               .FirstOrDefaultAsync();
     }
 
     public async Task<Medico> CreateAsync(Medico medico)
@@ -33,14 +74,14 @@ public class MedicoRepository
     public async Task<bool> UpdateAsync(Medico medico)
     {
         var existing = await _context.Medicos
-            .Include(m => m.HorariosMedico) // ⚠️ Incluir horarios
+            .Include(m => m.HorariosMedico) //  horarios
             .FirstOrDefaultAsync(m => m.Id == medico.Id);
 
         if (existing == null) return false;
 
         // Actualiza medico
         existing.Nombre = medico.Nombre;
-        existing.Especialidad = medico.Especialidad;
+        existing.EspecialidadId = medico.EspecialidadId;
 
      //Modifica horarios
         // Elimina horarios

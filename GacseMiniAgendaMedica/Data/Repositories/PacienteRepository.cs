@@ -11,7 +11,6 @@ namespace GacseMiniAgendaMedica.Data.Repositories;
             _context = context;
         }
 
-        // Obtener todos los pacientes
         public async Task<List<Paciente>> ObtenerTodos()
         {
             return await _context.Pacientes
@@ -19,21 +18,18 @@ namespace GacseMiniAgendaMedica.Data.Repositories;
                 .ToListAsync();
         }
 
-        // Obtener paciente por Id
         public async Task<Paciente?> ObtenerPorId(int id)
         {
             return await _context.Pacientes
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        // Crear nuevo paciente
         public async Task Crear(Paciente paciente)
         {
             _context.Pacientes.Add(paciente);
             await _context.SaveChangesAsync();
         }
 
-        // Actualizar paciente existente
         public async Task Actualizar(Paciente paciente)
         {
             var existente = await _context.Pacientes.FindAsync(paciente.Id);
@@ -47,7 +43,6 @@ namespace GacseMiniAgendaMedica.Data.Repositories;
             }
         }
 
-        // Eliminar paciente por Id
         public async Task Eliminar(int id)
         {
             var paciente = await _context.Pacientes.FindAsync(id);

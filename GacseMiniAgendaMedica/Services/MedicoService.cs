@@ -1,4 +1,5 @@
 ﻿using GacseMiniAgendaMedica.Data.Repositories;
+using GacseMiniAgendaMedica.DTOs;
 using GacseMiniAgendaMedica.Models;
 
 namespace GacseMiniAgendaMedica.Services;
@@ -12,9 +13,9 @@ public class MedicoService
         _repository = repository;
     }
 
-    public Task<List<Medico>> GetAll() => _repository.GetAllAsync();
+    public Task<List<MedicoGetDTO>> GetAll() => _repository.GetAllAsync();
 
-    public Task<Medico> GetById(int id) => _repository.GetByIdAsync(id);
+    public Task<MedicoGetDTO> GetById(int id) => _repository.GetByIdAsync(id);
 
     public Task<Medico> Create(Medico medico) => _repository.CreateAsync(medico);
 

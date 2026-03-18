@@ -16,7 +16,7 @@ public class MedicosController : ControllerBase
         _service = service;
     }
 
-    [HttpGet]
+    [HttpGet] 
     public async Task<IActionResult> GetAll()
     {
         var medicos = await _service.GetAll();
@@ -32,16 +32,16 @@ public class MedicosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] MedicoDTO dto)
+    public async Task<IActionResult> Create([FromBody] CrearMedicoDTO dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Nombre) || string.IsNullOrWhiteSpace(dto.Especialidad))
+        if (string.IsNullOrWhiteSpace(dto.Nombre) || dto.EspecialidadId <= 0)
             return BadRequest("Nombre y Especialidad son obligatorios");
 
-        // Crear la entidad Medico
+        // Crear Medico
         var medico = new Medico
         {
             Nombre = dto.Nombre,
-            Especialidad = dto.Especialidad,
+            EspecialidadId = dto.EspecialidadId,
             HorariosMedico = dto.Horarios.Select(h => new HorarioMedico
             {
                 DiaSemana = (DayOfWeek)((h.DiaSemana % 7)), //  1 = lunes, 0 = domingo
@@ -56,9 +56,9 @@ public class MedicosController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] MedicoDTO dto)
+    public async Task<IActionResult> Update(int id, [FromBody] CrearMedicoDTO dto)
     {
-        var medico = new Medico { Id = id, Nombre = dto.Nombre, Especialidad = dto.Especialidad };
+        var medico = new Medico { Id = id, Nombre = dto.Nombre, EspecialidadId = dto.EspecialidadId };
         var actualizado = await _service.Update(medico);
         if (!actualizado) return NotFound("Médico no encontrado");
         return NoContent();
